@@ -16,8 +16,22 @@ Open-core is acceptable only where the free tier is genuinely useful at real sca
 **2. Deployable air-gapped.**
 The tool gets zero internet access and must still work in major or full capacity. An upstream mirror may carry updates inward: signature packs, vulnerability databases, rule sets, container images. Disqualifying: a cloud control plane, a mandatory license check, a SaaS backend, online-only activation.
 
-**3. A real project, if GitHub-hosted.**
-Not brand new. More than 10 stars. Preferably more than two contributors, though that one is a preference rather than a rule.
+**3. A real, established project.**
+Not brand new, and with a track record showing someone other than the author relies on it.
+
+On GitHub: more than 10 stars, preferably more than two contributors, though the second is a preference rather than a rule.
+
+Off GitHub, do not try to force a star count to fit. Stars are a GitHub-culture artifact and most forges either lack them or score them incomparably. Use whichever of these you can actually verify, and name it in the entry:
+
+- Packaged in Debian main, Fedora, or Alpine. A distro security team taking on maintenance is a stronger signal than any star count.
+- A tagged release history spanning years.
+- A documented security contact or CVE-handling process.
+- Distinct author count from the git log.
+- An RFC or NIST reference.
+
+GitLab exposes `star_count`, `created_at` and `last_activity_at` at `https://gitlab.com/api/v4/projects/{url-encoded-path}`, and the same path works on self-hosted GitLab. Codeberg and other Gitea or Forgejo instances expose `https://codeberg.org/api/v1/repos/{owner}/{repo}`. For a project-owned git server or a signed tarball, read the release page and the Debian package metadata.
+
+This list spent its first revision entirely on GitHub, not because the rule said so but because the verification method did. If you are submitting something from another forge, you are fixing that, and the entry is more valuable for it.
 
 ## Entry format
 

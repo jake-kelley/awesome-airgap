@@ -65,6 +65,22 @@ These are widely deployed Splunk apps with no published source repository. Distr
 | Tool | Reason |
 |---|---|
 | [rcastley/splunk-custom-visualizations](https://github.com/rcastley/splunk-custom-visualizations) | Apache-2.0, 41 stars, vendored JS with no CDN calls, and genuinely the best community answer to Dashboard Studio custom visualizations. Created 2026-03-17, which fails the "not brand new" half of rule 3. Revisit in a year; it is the strongest candidate on this page. |
+
+### Out of scope
+
+Genuinely open, genuinely air-gap-capable, and genuinely not what this list is for. Recorded so nobody re-proposes them.
+
+| Tool | Reason |
+|---|---|
+| **GNOME Keyring**, **KWallet** | Both are fully offline encrypted credential stores, packaged in Debian main. They are desktop-environment plumbing that arrives with the OS and that nobody administers as a security control. The list's scope rule excludes general-purpose infrastructure that happens to be useful, and these are the clearest case of it. |
+| **Seahorse** | GTK front end for GPG and SSH key management on top of GNOME Keyring. Real security function, but it is a desktop GUI for [GnuPG](https://gnupg.org/), which is listed directly and is what an offline signing workflow actually uses. |
+| **[BIRD](https://gitlab.nic.cz/labs/bird)** | GPL-2.0, in Debian main, needs zero internet, and would qualify on every hard rule. It is a BGP and OSPF routing daemon whose security relevance is one optional feature (RPKI route-origin validation) rather than its purpose. Revisit if route-origin validation on isolated backbones becomes a category of its own. |
+| **[Tor](https://gitlab.torproject.org/tpo/core/tor)** | BSD-3-Clause and unambiguously open, but it fails the air-gap rule at the concept level. Its entire function is routing through relays operated by strangers on the public internet. There is no upstream feed that substitutes for a relay network. Unlike the live-feed dependencies elsewhere on this list, Tor does not degrade offline, it stops. |
+
+### Canonical home is on GitHub after all
+
+Checked during the non-GitHub sweep and found to develop on GitHub despite a project-branded website. Listed so the question is not reopened: strongSwan, OpenVPN, Snort 3, AIDE, rsyslog, syslog-ng, LibreSSL portable, VeraCrypt, nwipe, and scrub. In each case the project site is a download or commercial-support front end and the live repository is on GitHub.
+
 ---
 
 ## Qualified, but cut
@@ -81,6 +97,8 @@ Every tool here clears all three rules. They were cut only to avoid stacking thr
 | [cfssl](https://github.com/cloudflare/cfssl) | step-ca | Fully offline PKI toolkit. step-ca covers CA plus ACME plus an offline CLI mode in one entry. |
 | [in-toto](https://github.com/in-toto/in-toto) | Cosign | Offline-capable supply-chain attestation, largely covered by Sigstore attestations here. |
 | [Splunk Gantt](https://github.com/alexiri/splunk-gantt) | (no listed alternative) | GPL-3.0, 11 stars, d3 vendored rather than CDN-loaded, so it clears every hard rule. Cut on judgment: last pushed 2017, and Splunk's custom-visualization API has moved since. Fork-and-patch, not drop-in. |
+| [Knot Resolver](https://gitlab.nic.cz/knot/knot-resolver) | BIND 9 | GPL-3.0, in Debian main, DNSSEC-validating recursive resolver from the CZ.NIC team. Cut as redundant: BIND 9's resolver mode covers the same ground and needs the same mirrored root zone. |
+| [rkhunter](https://sourceforge.net/projects/rkhunter/) | Samhain, chkrootkit | Last release 1.4.6, dated 2018-02-24. Eight years stale with no maintained successor off GitHub. Failed rule 3 rather than being cut for redundancy, but recorded here since it is otherwise a reasonable ask. |
 | [ntopng](https://github.com/ntop/ntopng) | Zeek, Suricata | GPL-3.0, fully self-hosted NDR. Cut for category budget only. |
 | [Dionaea](https://github.com/DinoTools/dionaea) | Cowrie, OpenCanary | Self-hosted malware-capture honeypot. |
 | [GRR Rapid Response](https://github.com/google/grr) | Velociraptor | Similar live remote forensics ground, less recent activity. |

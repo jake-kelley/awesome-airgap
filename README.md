@@ -2,13 +2,15 @@
 
 > Security tooling that survives the sneakernet.
 
-A curated list of **94 open-source security tools that work with zero internet access.**
+A curated list of **108 open-source security tools that work with zero internet access.**
 
 Every other security tool list assumes you can reach the internet. Plenty of teams can't. Disconnected labs, isolated OT and ICS networks, forensic workstations, regulated enclaves, offline build farms, incident response on a network you've just pulled the plug on — in all of them the constraint is the same, and most tooling quietly assumes it away.
 
 So the question this list answers for every entry is not "is this a good tool?" It is **"what exactly breaks when you unplug it, and what does the upstream mirror have to carry so it doesn't?"**
 
 Nothing here is a demo of a paid product. Nothing here phones home to a vendor to function.
+
+Tools are listed at their canonical home, which is not always GitHub. Wireshark, GnuPG, OpenSSH and others develop elsewhere, and an earlier revision of this list missed them because its verification method assumed a GitHub API call. That is recorded here rather than quietly fixed.
 
 ---
 
@@ -18,7 +20,7 @@ A tool earns a slot only if it clears all of these:
 
 1. **Open source and free in major or full capacity.** Open-core is allowed only where the free tier is genuinely useful at real scale. Where something is paywalled, the entry says so. Crippled free tiers are rejected and listed in [NOT-INCLUDED.md](NOT-INCLUDED.md) with the reason.
 2. **Deployable air-gapped.** The tool itself gets zero internet access and must still work in major or full capacity. An upstream mirror may carry updates inward — signature packs, vulnerability databases, rule sets, container images. A cloud control plane, a mandatory license check, a SaaS backend, or online-only activation is disqualifying.
-3. **Real project, if GitHub-hosted.** Not brand new, more than 10 stars, and preferably more than two contributors.
+3. **A real, established project.** Not brand new, and with enough of a track record that someone other than the author depends on it. On GitHub that means more than 10 stars and preferably more than two contributors. Off GitHub, stars are the wrong metric: inclusion in Debian, Fedora or Alpine, a tagged release history spanning years, or a documented CVE-handling process all count for more.
 
 Portable single binaries (Go, Rust, C) and static offline web apps are actively preferred. Splunk apps and add-ons are welcome where fully free.
 
@@ -30,7 +32,7 @@ Portable single binaries (Go, Rust, C) and static offline web apps are actively 
 | `MAJOR` | Core function works offline. One or more secondary features need a mirrored feed or must be disabled. The entry names which. |
 | `CONDITIONAL` | Works offline only after a specific setup step — staging a database, pre-bundling dependencies, or standing up a private backend. The entry names the step. |
 
-Star counts and licenses were verified against the GitHub API on **2026-08-25**.
+Star counts, licenses and maturity signals were verified on **2026-08-25** against the GitHub API, the GitLab API, Debian package metadata, and project release pages, depending on where each tool actually lives.
 
 ---
 
@@ -42,6 +44,8 @@ Star counts and licenses were verified against the GitHub API on **2026-08-25**.
   - [Vulnerability scanning & management](#vulnerability-scanning--management) · [Hardening & compliance](#hardening--compliance) · [Exploitation frameworks](#exploitation-frameworks) · [Network discovery](#network-discovery) · [Credential auditing](#credential-auditing) · [Wireless assessment](#wireless-assessment) · [Physical & hardware](#physical--hardware) · [Adversary emulation](#adversary-emulation) · [Active Directory](#active-directory) · [Offline OSINT](#offline-osint) · [Assessment reporting](#assessment-reporting)
 - [AppSec, Supply Chain & Cloud](#appsec-supply-chain--cloud)
   - [CI/CD policy gating](#cicd-policy-gating) · [SAST & DAST](#sast--dast) · [Software composition analysis](#software-composition-analysis) · [Secret scanning](#secret-scanning) · [Secrets management](#secrets-management) · [SBOM & supply chain](#sbom--supply-chain) · [Containers & Kubernetes](#containers--kubernetes) · [Infrastructure as code](#infrastructure-as-code) · [AWS security & automation](#aws-security--automation) · [PKI & certificates](#pki--certificates)
+- [Network & Host Infrastructure](#network--host-infrastructure)
+  - [DNS](#dns) · [VPN & encrypted transport](#vpn--encrypted-transport) · [Host firewalling](#host-firewalling) · [Media sanitization](#media-sanitization)
 - [Splunk](#splunk)
   - [Detection content & threat hunting](#detection-content--threat-hunting) · [Data onboarding & add-ons](#data-onboarding--add-ons) · [Deployment & administration](#deployment--administration) · [Development & testing tooling](#development--testing-tooling)
 - [Portable Offline Utilities](#portable-offline-utilities)
@@ -83,6 +87,10 @@ Exposes OS state — processes, network connections, installed packages, file ha
 **[Velociraptor](https://github.com/Velocidex/velociraptor)** — AGPL-3.0 · Go single binary · 4.2k★ · since 2018
 Endpoint visibility and DFIR at fleet scale, using its own query language (VQL) to run forensic artifact collection and live hunting across thousands of hosts from one console.
 > `FULL` — Server and agents talk only to each other over a self-hosted channel. VQL artifact packs are plain files you mirror in.
+
+**[Samhain](https://www.la-samhna.de/samhain/)** — GPL-2.0 · C, standalone or client/server · in Debian main · since 1999
+File integrity monitoring and host intrusion detection with centralized logging across a fleet, plus rootkit and hidden-process detection. Twenty-seven years of releases and still shipping: version 4.5.3 landed October 2025 with a detached GPG signature.
+> `FULL` — Standalone mode needs nothing external. Client/server mode needs monitored hosts to reach the central log server, which lives on the isolated network too.
 
 ## Incident response & case management
 
@@ -150,6 +158,10 @@ The most widely deployed free IDS/IPS engine, multi-threaded for high-throughput
 All-in-one NSM and SIEM distribution that deploys and wires together Zeek, Suricata, an analyst dashboard, and log storage.
 > `FULL` — Ships an **officially documented and supported air-gap setup mode.** The ISO bundles every package and container image needed, with an official offline-repo workflow for later rule and GeoIP updates. One of very few tools here with a first-class air-gap path rather than a workaround.
 
+**[Wireshark](https://gitlab.com/wireshark/wireshark)** — GPL-2.0-or-later · C/C++ desktop app + `tshark` CLI · 1.6k★ GitLab, in Debian main · since 1998
+The reference deep packet analyzer and protocol dissector, with a headless twin in `tshark` for capture pipelines and scripted triage. Nothing free comes close on protocol coverage. Its canonical repository has never been on GitHub, which is the only reason it was missing from the first revision of this list.
+> `FULL` — Capture and dissection are entirely local, against a live NIC or a `.pcap`/`.pcapng` on disk. The three features that touch the network (the update check, MaxMind GeoIP lookup, and OUI vendor-database refresh) are optional and file-backed; GeoIP and OUI are plain data files a mirror carries in.
+
 ## Detection engineering
 
 **[Sigma](https://github.com/SigmaHQ/sigma)** — DRL 1.1 (free to use, share, modify; spec is public domain) · YAML + Python tooling · 10.9k★ · since 2016
@@ -187,6 +199,14 @@ Template-driven scanner for HTTP, DNS, TCP and other protocols, detecting known 
 **[Vuls](https://github.com/future-architect/vuls)** — GPL-3.0 · Go single binary, agentless over SSH · 12.2k★ · since 2016
 Agentless vulnerability scanner for Linux and FreeBSD hosts, containers, and language dependencies, matching installed packages against CVE and OVAL data. The agentless design fits patch workflows well.
 > `CONDITIONAL` — The scanner only touches its targets, but its databases (NVD, distro OVAL) are built by separate fetch tools that need internet. Those are plain SQLite files: build on a connected host, copy in, and it runs fully offline. The WordPress lookup needs a paid API key and won't work offline.
+
+**[Exploit-DB](https://gitlab.com/exploit-database/exploitdb)** — GPL-2.0-or-later · Perl/shell (`searchsploit`) + flat-file archive · 254★ GitLab, upstream for Kali's `exploitdb` package · GitLab home since 2022
+The local exploit archive behind `searchsploit`: exploits, shellcode and Google Hacking Database entries, full-text searchable against a copy on disk. The list had no exploit-reference entry at all before this.
+> `FULL` — `searchsploit` queries a locally cloned archive with no network calls. The exploit-db.com web front end is irrelevant to the CLI.
+
+**[debsecan](https://salsa.debian.org/debian/debsecan)** — GPL-2.0-or-later · Python · Debian's own security-audit tool, in Debian main · since 2005
+Compares the packages actually installed on a Debian or derivative host against the Debian Security Bug Tracker and reports which have open vulnerabilities. Debian-native where Vuls is NVD- and OVAL-driven, so the two answer different questions on the same host.
+> `CONDITIONAL` — The scan itself is local. Its vulnerability data comes from the Debian Security Tracker, normally fetched by `debsecan --update-cache`; that is a flat file, so stage it from a connected host on whatever cadence your risk tolerance allows.
 
 ## Hardening & compliance
 
@@ -342,6 +362,14 @@ Combines pattern matching with structural, language-aware parsing to find creden
 Centralized secrets storage, dynamic credential generation, and encryption as a service, API- and CLI-compatible with HashiCorp Vault. The Linux Foundation-governed continuation after Vault moved to a non-OSI license.
 > `FULL` — Unseal, storage backends (file, Raft, Consul) and auth methods all run inside the deployment boundary. No external calls required.
 
+**[GnuPG](https://gnupg.org/)** — GPL-3.0-or-later · C (`gpg`, `gpg-agent`, `gpgsm`) · in Debian main · since 1997
+The reference OpenPGP implementation, and the substrate under most offline signing and encryption workflows: detached signatures on transfer media, encrypted archives crossing the gap, offline master-key custody with subkeys on a smartcard. Canonical development is at `git.gnupg.org`.
+> `FULL` — Needs the binary and a local keyring, nothing else. Keyservers are optional; keys move as files, which is exactly the model an isolated network already uses.
+
+**[pass](https://www.passwordstore.org/)** — GPL-2.0-or-later · Shell over GnuPG and git · in Debian main · since 2012
+A password manager small enough to audit in an afternoon: each secret is a GPG-encrypted file in a directory tree, versioned with git. No database, no daemon, no server. Where OpenBao is the team's secret infrastructure, this is what an individual operator carries.
+> `FULL` — GnuPG and git are the only dependencies. Syncing the git store to another host is optional and is itself the sneakernet transport.
+
 ## SBOM & supply chain
 
 **[Syft](https://github.com/anchore/syft)** — Apache-2.0 · Go single binary · 9.5k★ · since 2020
@@ -413,6 +441,54 @@ Private certificate authority and ACME server for issuing and renewing short-liv
 > `FULL` — No phone-home or license check. The `step` CLI has an explicit `--offline` mode operating directly against local config, database and keys with no server running, and the two-tier offline-root design is built around air-gapped key custody rather than fighting it.
 
 ---
+
+# Network & Host Infrastructure
+
+The plumbing an isolated network has to stand up for itself, in the cases where that plumbing is a security control rather than a convenience. An enclave with no internet still needs name resolution, encrypted transport between segments, host firewalling, and a defensible answer for wiping media on the way out.
+
+The line drawn here: a security team owns and configures these. General-purpose components that merely happen to be security-adjacent are out, and the ones considered are named in [NOT-INCLUDED.md](NOT-INCLUDED.md).
+
+## DNS
+
+**[BIND 9](https://gitlab.isc.org/isc-projects/bind9)** — MPL-2.0 · C · in Debian main, forty years of production use · since 1984
+The reference DNS implementation, covering both authoritative and recursive roles with full DNSSEC. Longer continuous deployment history than anything else on this page.
+> `CONDITIONAL` — As an authoritative server for locally defined zones it needs nothing external. As a recursive resolver it needs either forwarders reachable inside the enclave or a locally staged root zone per RFC 7706, replacing the hints file. A naive resolver install will sit there querying root servers it cannot reach, so this is a configuration decision made up front, not a default.
+
+**[Knot DNS](https://gitlab.nic.cz/knot/knot-dns)** — GPL-2.0-or-later · C · in Debian main, run by CZ.NIC for the .cz registry · since 2011
+Authoritative-only DNS built for DNSSEC signing at scale by a national registry operator. A cleaner fit than BIND wherever recursion is not wanted, which in a segmented enclave is often.
+> `FULL` — Authoritative by design, serving configured zones from local files with no upstream dependency. Signing keys are generated and held locally.
+
+## VPN & encrypted transport
+
+**[OpenSSH](https://www.openssh.com/)** — BSD-style · C, portable build · in Debian main, releases since 1999 · since 1995
+The reference SSH implementation, and in an isolated network the default answer for remote administration, file transfer, port forwarding and jump hosts. Distributed as signed tarballs by the OpenBSD project; there is no GitHub canonical repo. Release 10.5p1 landed 11 August 2026.
+> `FULL` — Fully offline for key and password auth. The certificate-authority workflow is self-hosted, so it changes nothing.
+
+**[WireGuard tools](https://www.wireguard.com/)** — GPL-2.0 · C (`wg`, `wg-quick`) · in Debian main, kernel-mainlined 2020 · since 2016
+Userspace configuration for the WireGuard VPN, whose kernel module has shipped in mainline Linux since 5.6. A few thousand lines of auditable code where the alternatives are a few hundred thousand, which matters when the review is yours to do.
+> `FULL` — Kernel module plus `wg` and `wg-quick` is the entire stack. No external service at any point.
+
+**[tinc](https://www.tinc-vpn.org/)** — GPL-2.0-or-later · C daemon · in Debian main · since 1998
+Full-mesh VPN daemon that builds its own routing overlay instead of assuming a hub, which suits site-to-site links between isolated segments where no segment should be privileged. Version 1.0.37 released March 2026.
+> `MAJOR` — Core mesh routing is fully offline. The optional invitation and auto-configuration flow assumes reachable peers, which is true of any VPN rather than a hidden dependency.
+
+## Host firewalling
+
+**[nftables / Netfilter](https://www.netfilter.org/)** — GPL-2.0 · C, kernel plus `nft` CLI · in Debian main, mainlined 2014 · since 2009
+The Linux packet-filtering framework underneath host and network firewalling on effectively every distribution, and the successor to the iptables syntax. Canonical development is at `git.netfilter.org`.
+> `FULL` — In the kernel and in every distro's base packages. Nothing to mirror beyond the distro repository you already mirror.
+
+## Media sanitization
+
+**[GNU coreutils `shred`](https://www.gnu.org/software/coreutils/)** — GPL-3.0-or-later · C, part of coreutils · in Debian main, part of every base install · since 2002
+Overwrites a file or a whole block device in place. Listed not because it is obscure but because media sanitization is a real step in an air-gapped workflow and this list had no entry for it. Understand the limits before relying on it: `shred` assumes the filesystem overwrites in place, which journaling, copy-on-write and log-structured filesystems do not guarantee, and it cannot reach reallocated sectors or wear-levelled blocks on SSDs and flash. For those, use the drive's own secure-erase command or physical destruction, per your sanitization policy.
+> `FULL` — A local file or block-device operation with no network dependency of any kind.
+
+---
+
+**[GnuTLS](https://gitlab.com/gnutls/gnutls)** — GPL-3.0-or-later (LGPL for the library) · C library + CLI · 325★ GitLab, in Debian main · since 2003
+GNU's TLS, DTLS and X.509 implementation with PKCS#12 support, and the crypto backend for a large slice of free-software networking where OpenSSL is not wanted. `certtool` alone is a capable offline certificate workbench.
+> `FULL` — A local library and CLI. The library originates no network calls of its own; connectivity is whatever the calling application does.
 
 # Splunk
 
