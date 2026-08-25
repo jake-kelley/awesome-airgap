@@ -2,7 +2,7 @@
 
 > Security tooling that survives the sneakernet.
 
-A curated list of **75 open-source security tools that work with zero internet access.**
+A curated list of **94 open-source security tools that work with zero internet access.**
 
 Every other security tool list assumes you can reach the internet. Plenty of teams can't. Disconnected labs, isolated OT and ICS networks, forensic workstations, regulated enclaves, offline build farms, incident response on a network you've just pulled the plug on — in all of them the constraint is the same, and most tooling quietly assumes it away.
 
@@ -42,6 +42,8 @@ Star counts and licenses were verified against the GitHub API on **2026-08-25**.
   - [Vulnerability scanning & management](#vulnerability-scanning--management) · [Hardening & compliance](#hardening--compliance) · [Exploitation frameworks](#exploitation-frameworks) · [Network discovery](#network-discovery) · [Credential auditing](#credential-auditing) · [Wireless assessment](#wireless-assessment) · [Physical & hardware](#physical--hardware) · [Adversary emulation](#adversary-emulation) · [Active Directory](#active-directory) · [Offline OSINT](#offline-osint) · [Assessment reporting](#assessment-reporting)
 - [AppSec, Supply Chain & Cloud](#appsec-supply-chain--cloud)
   - [CI/CD policy gating](#cicd-policy-gating) · [SAST & DAST](#sast--dast) · [Software composition analysis](#software-composition-analysis) · [Secret scanning](#secret-scanning) · [Secrets management](#secrets-management) · [SBOM & supply chain](#sbom--supply-chain) · [Containers & Kubernetes](#containers--kubernetes) · [Infrastructure as code](#infrastructure-as-code) · [AWS security & automation](#aws-security--automation) · [PKI & certificates](#pki--certificates)
+- [Splunk](#splunk)
+  - [Detection content & threat hunting](#detection-content--threat-hunting) · [Data onboarding & add-ons](#data-onboarding--add-ons) · [Deployment & administration](#deployment--administration) · [Development & testing tooling](#development--testing-tooling)
 - [Portable Offline Utilities](#portable-offline-utilities)
 
 ---
@@ -409,6 +411,104 @@ Orchestration CLI that runs a curated set of open-source scanners — Bandit, Op
 **[step-ca](https://github.com/smallstep/certificates)** — Apache-2.0 · Go single binary + `step` CLI · 8.8k★ · since 2018
 Private certificate authority and ACME server for issuing and renewing short-lived TLS and SSH certificates internally. The most complete open private-CA implementation.
 > `FULL` — No phone-home or license check. The `step` CLI has an explicit `--offline` mode operating directly against local config, database and keys with no server running, and the two-tier offline-root design is built around air-gapped key custody rather than fighting it.
+
+---
+
+# Splunk
+
+Splunk Enterprise itself is commercial software and is not on this list. What follows is the free, open-source ecosystem that runs on top of a Splunk instance you already have: detection content, add-ons, deployment automation, and development tooling.
+
+Two things are specific to this section:
+
+**Splunkbase is an internet service.** An isolated deployment means downloading the `.spl` or `.tgz` on a connected host and side-loading it by hand. Every entry below has real source on GitHub, which is what makes that possible and auditable. Several well-known Splunk apps are distributed only through Splunkbase with no published source, and they are listed in [NOT-INCLUDED.md](NOT-INCLUDED.md) rather than here.
+
+**Install-time and run-time are different problems.** An app that pulls dependencies while you build it is fine, because the mirror can carry them. An app whose core search performs a live lookup against a vendor API is not, and most threat-intel enrichment add-ons are exactly that.
+
+One negative result worth recording: the community custom-visualization space did not yield a single qualifying entry. Most viz apps ship without a license file, sit under ten stars, or have been abandoned for the better part of a decade. Details are in NOT-INCLUDED.md.
+
+## Detection content & threat hunting
+
+**[Splunk Security Content (ESCU)](https://github.com/splunk/security_content)** — Apache-2.0 · Splunk app (.spl) + YAML source · 1.7k★ · since 2018
+Source repository behind Enterprise Security Content Update: hundreds of detections, analytic stories and playbooks mapped to MITRE ATT&CK, built with the open `contentctl` tooling. The single largest body of maintained, openly licensed SPL detection logic in existence.
+> `MAJOR` — Existing detections, dashboards and the app itself run with zero internet access. New and updated content is the only thing needing an inward mirror of this repo or the packaged release.
+
+**[Attack Data](https://github.com/splunk/attack_data)** — Apache-2.0 · Log sample datasets · 807★ · since 2020
+Curated library of attack-simulation datasets used to validate ESCU detections and to test SPL against known-bad telemetry without generating it yourself. Static data with no runtime dependency of any kind.
+> `FULL` — Clone once, use indefinitely. Nothing to mirror after the initial copy.
+
+**[ThreatHunting](https://github.com/olafhartong/ThreatHunting)** — MIT · Splunk app (.spl) · 1.2k★ · since 2018
+Over 130 saved searches built on Sysmon telemetry and mapped to ATT&CK, with a bundled Navigator coverage export. Unusually for a hunting pack this size, not one search depends on a hosted reputation or intel service.
+> `FULL` — Nothing to mirror. Requires Sysmon data already flowing into an index; the author's separate `sysmon-modular` configuration is a convenience rather than a dependency. Last substantive push was 2023, but the searches target stable Sysmon event IDs.
+
+**[Splunk4DFIR](https://github.com/mf1d3l/Splunk4DFIR)** — MIT · Docker Compose · 170★ · since 2024
+Stands up Splunk with precompiled Sigma detections and triage dashboards for EVTX, Zeek, Suricata, syslog and forensic tool output from Hayabusa, MemProcFS and plaso, all read from local artifact folders. A forensics workstation in a compose file.
+> `MAJOR` — Ingest and dashboards run offline once built. The `docker build` pulls the base Splunk image and Sigma pipelines, so build on a connected host and carry the image across, or pre-stage the dependencies in a local mirror.
+
+## Data onboarding & add-ons
+
+**[Splunk Connect for Syslog (SC4S)](https://github.com/splunk/splunk-connect-for-syslog)** — Apache-2.0 · syslog-ng container + Splunk TA · 180★ · since 2019
+Containerized syslog-ng collector that normalizes syslog from hundreds of vendor devices, including firewalls, network gear and OT and ICS equipment, and forwards it to Splunk over HEC with CIM field mapping already done. The standard way to onboard third-party syslog without hunting down a TA per vendor.
+> `FULL` — Runs as a local container stack. Nothing is contacted at runtime beyond the Splunk instance itself.
+
+**[Stamus Networks App for Splunk](https://github.com/StamusNetworks/stamus_for_splunk)** — AGPL-3.0 · Splunk app (.spl) · 13★ · since 2020
+Dashboards and CIM mappings for Suricata `eve.json` output. The vendor documents standalone use against plain Suricata sensors, without their commercial platform.
+> `MAJOR` — Suricata EVE ingest and dashboards work fully offline. Pointing `local/ssp.conf` at a Stamus Central Server is an optional feature needing a reachable instance; leave it unconfigured and the app is unaffected.
+
+**[TA-Sysmon-deploy](https://github.com/olafhartong/TA-Sysmon-deploy)** — MIT · Splunk deployment app · 32★ · since 2017
+Distributes and version-pins the Sysmon binary and an ATT&CK-mapped configuration to endpoints through the Splunk Deployment Server, reinstalling automatically when the config changes. Solves Sysmon config drift across a fleet using infrastructure already present.
+> `CONDITIONAL` — The app cannot bundle `Sysmon.exe`, because the Sysinternals license forbids redistribution, so fetch it once on a connected host and drop it in the app's `bin` folder before staging. After that, distribution runs entirely over the internal deployment-server channel. Last pushed 2020; the deployment-server interface it targets has not changed.
+
+## Deployment & administration
+
+**[docker-splunk](https://github.com/splunk/docker-splunk)** — Apache-2.0 · Dockerfiles / build tooling · 548★ · since 2018
+Splunk's official container build tooling for Splunk Enterprise and the Universal Forwarder. The usual starting point for reproducible Splunk deployments.
+> `MAJOR` — Builds and runs with zero internet access once the Splunk tarball and base OS image are mirrored inward. Nothing calls out at runtime. Accepting the Splunk license at first start is a configuration flag, not a network check. Note that GitHub reports no license for this repo; the Apache-2.0 text is at `docs/LICENSE.md`, confirmed by reading it.
+
+**[splunk-ansible](https://github.com/splunk/splunk-ansible)** — Apache-2.0 · Ansible role · 402★ · since 2018
+Splunk's official playbooks for standing up single-instance and clustered deployments, covering indexer clustering, search head clustering and licensing. Used internally by both docker-splunk and splunk-operator.
+> `MAJOR` — Runs offline against hosts on the internal network. Only the Splunk software package needs staging locally instead of pulling from splunk.com. Same license caveat as docker-splunk: Apache-2.0 lives at `docs/LICENSE.md`.
+
+**[splunk-operator](https://github.com/splunk/splunk-operator)** — Apache-2.0 · Go binary / Helm chart · 260★ · since 2019
+Kubernetes operator managing Splunk Enterprise clusters as custom resources. Talks only to the Kubernetes API server and the cluster it manages.
+> `MAJOR` — Operator and managed cluster run fully offline once the operator image and Splunk Enterprise image are mirrored into the cluster's registry.
+
+**[CIM Vladiator](https://github.com/hire-vladimir/SA-cim_vladiator)** — Apache-2.0 · Splunk app (.spl) · 80★ · since 2015
+Validates a TA's field extractions against the Common Information Model, surfacing missing required fields and out-of-spec values, with a browsable CIM field dictionary alongside. Replaces cross-referencing the CIM specification by hand, which is the actual alternative.
+> `FULL` — A dashboard over locally indexed data and a bundled copy of the CIM specification. No external calls. Actively maintained after a decade.
+
+**[Splunk Website Monitoring](https://github.com/LukeMurphey/splunk-website-monitoring)** — MIT · Splunk app (.spl) · 46★ · since 2013
+Polls HTTP and HTTPS endpoints on a schedule and indexes availability, response time and content-match results, with alerting on outages. Points at internal services just as happily as external ones.
+> `FULL` — The monitored endpoints only need to be reachable on the local network. The app itself never calls out.
+
+**[Splunk Slideshow](https://github.com/LukeMurphey/splunk-slideshow)** — MIT · Splunk app (.spl) · 13★ · since 2014
+Rotates through a configured list of dashboards on a timer for driving a SOC or NOC wall display, with no separate kiosk product involved.
+> `FULL` — Drives Splunk's own dashboard URLs on a browser timer. Nothing external.
+
+## Development & testing tooling
+
+**[Attack Range](https://github.com/splunk/attack_range)** — Apache-2.0 · Python / Terraform · 2.5k★ · since 2019
+Splunk's detection-engineering lab: builds a small Splunk instance plus attacker and victim hosts, then replays adversary techniques through Atomic Red Team or Caldera so detections can be written and validated against real telemetry.
+> `CONDITIONAL` — Use the local provider, meaning VMware, libvirt or KVM, with pre-staged VM images. The cloud providers are the documented default and are not usable here, so this is a deliberate configuration choice rather than a drop-in.
+
+**[Eventgen](https://github.com/splunk/eventgen)** — Apache-2.0 · Python · 396★ · since 2012
+Configurable synthetic event generator producing realistic sample data from templates: auth logs, web logs, custom formats. Fills an index for testing dashboards, detections and add-ons when no live source exists.
+> `FULL` — Generates from local config and sample files. Nothing to mirror. Last pushed 2023, and the config format has been stable for years.
+
+**[pytest-splunk-addon](https://github.com/splunk/pytest-splunk-addon)** — Apache-2.0 · pytest plugin · 66★ · since 2020
+Splunk's own pytest plugin for automated TA testing, covering CIM field validation and both index-time and search-time checks. This is what Splunk's internal add-on pipeline runs.
+> `FULL` — Tests execute against a local Splunk instance. No external service involved.
+
+**[UCC Generator](https://github.com/splunk/addonfactory-ucc-generator)** — Apache-2.0 · Python CLI · 85★ · since 2020
+Scaffolds a complete TA with a standard configuration UI, schema and REST handlers from one declarative spec, removing most of the boilerplate from building an add-on. Splunk builds many of its own TAs with it.
+> `FULL` — Generates source locally from a local spec. The resulting add-on is side-loadable like any other.
+
+**[Splunk SDK for Python](https://github.com/splunk/splunk-sdk-python)** — Apache-2.0 · Python library · 741★ · since 2011
+The official client library for the Splunk REST and search API, underpinning custom apps, modular inputs and automation scripts.
+> `FULL` — Talks only to the Splunk instance it is pointed at. No telemetry, no phone-home.
+
+**[MLTK Container (DSDL)](https://github.com/splunk/splunk-mltk-container-docker)** — Apache-2.0 · Docker container · 64★ · since 2019
+The open-source container backing Splunk's Data Science and Deep Learning app, providing a local Jupyter, TensorFlow and PyTorch runtime so model training and inference happen on your hardware instead of a hosted ML service.
+> `CONDITIONAL` — Build the image once with Python packages mirrored inward, or carry a prebuilt image across. Training and inference then run entirely locally with no external API calls.
 
 ---
 

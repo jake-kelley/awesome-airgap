@@ -47,11 +47,29 @@ Two kinds of exclusion below. The first list failed a hard rule and will not be 
 | **AlienVault OSSIM** | Effectively unmaintained, folded into a commercial product. Not a credible current option. |
 | **Cuckoo Sandbox** | Original upstream is dormant. Superseded by its actively maintained fork [CAPEv2](https://github.com/kevoreilly/CAPEv2). |
 
+
+### Source-available only
+
+These are widely deployed Splunk apps with no published source repository. Distribution is Splunkbase-only, so the license cannot be audited and the project cannot be assessed against rule 3. That is a verification failure rather than a judgment on the software.
+
+| Tool | Reason |
+|---|---|
+| **Splunk Add-on for Microsoft Windows / Unix and Linux / Sysmon** | No source repo under the `splunk` org. Splunkbase-only distribution under Splunk's own license, which is not OSI-approved. |
+| **Splunk Common Information Model (CIM) app** | Same: no published source. [CIM Vladiator](https://github.com/hire-vladimir/SA-cim_vladiator) is listed instead as the open tooling around CIM. |
+| **Splunk Security Essentials** | No source repo at any Splunk-org path, and no credible maintained third-party fork. |
+| **Splunk Machine Learning Toolkit (the app)** | No published source. Its open-source container companion, [DSDL](https://github.com/splunk/splunk-mltk-container-docker), is listed. |
+| **Splunk Lookup Editor** | Long-standing and genuinely useful, but no current source repo under the author's account. Splunkbase-only. |
+
+### Too new to judge
+
+| Tool | Reason |
+|---|---|
+| [rcastley/splunk-custom-visualizations](https://github.com/rcastley/splunk-custom-visualizations) | Apache-2.0, 41 stars, vendored JS with no CDN calls, and genuinely the best community answer to Dashboard Studio custom visualizations. Created 2026-03-17, which fails the "not brand new" half of rule 3. Revisit in a year; it is the strongest candidate on this page. |
 ---
 
 ## Qualified, but cut
 
-Every tool here clears all three rules. They were cut only to avoid stacking three or four overlapping entries in one subcategory. If you think one of these earns a slot over something currently listed, open a pull request and make the argument.
+Every tool here clears all three rules. They were cut only to avoid stacking three or four overlapping entries in one subcategory. One exception is noted inline: Splunk Gantt was cut for age rather than redundancy. If you think one of these earns a slot over something currently listed, open a pull request and make the argument.
 
 | Tool | Overlaps with | Note |
 |---|---|---|
@@ -62,6 +80,7 @@ Every tool here clears all three rules. They were cut only to avoid stacking thr
 | [Terrascan](https://github.com/tenable/terrascan) | Checkov | Same rationale as KICS. |
 | [cfssl](https://github.com/cloudflare/cfssl) | step-ca | Fully offline PKI toolkit. step-ca covers CA plus ACME plus an offline CLI mode in one entry. |
 | [in-toto](https://github.com/in-toto/in-toto) | Cosign | Offline-capable supply-chain attestation, largely covered by Sigstore attestations here. |
+| [Splunk Gantt](https://github.com/alexiri/splunk-gantt) | (no listed alternative) | GPL-3.0, 11 stars, d3 vendored rather than CDN-loaded, so it clears every hard rule. Cut on judgment: last pushed 2017, and Splunk's custom-visualization API has moved since. Fork-and-patch, not drop-in. |
 | [ntopng](https://github.com/ntop/ntopng) | Zeek, Suricata | GPL-3.0, fully self-hosted NDR. Cut for category budget only. |
 | [Dionaea](https://github.com/DinoTools/dionaea) | Cowrie, OpenCanary | Self-hosted malware-capture honeypot. |
 | [GRR Rapid Response](https://github.com/google/grr) | Velociraptor | Similar live remote forensics ground, less recent activity. |
