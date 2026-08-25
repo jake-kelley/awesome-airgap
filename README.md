@@ -2,7 +2,7 @@
 
 > Security tooling that survives the sneakernet.
 
-A curated list of **108 open-source security tools that work with zero internet access.**
+A curated list of **116 open-source security tools that work with zero internet access.**
 
 Every other security tool list assumes you can reach the internet. Plenty of teams can't. Disconnected labs, isolated OT and ICS networks, forensic workstations, regulated enclaves, offline build farms, incident response on a network you've just pulled the plug on — in all of them the constraint is the same, and most tooling quietly assumes it away.
 
@@ -43,7 +43,7 @@ Star counts, licenses and maturity signals were verified on **2026-08-25** again
 - [Offense & Assessment](#offense--assessment)
   - [Vulnerability scanning & management](#vulnerability-scanning--management) · [Hardening & compliance](#hardening--compliance) · [Exploitation frameworks](#exploitation-frameworks) · [Network discovery](#network-discovery) · [Credential auditing](#credential-auditing) · [Wireless assessment](#wireless-assessment) · [Physical & hardware](#physical--hardware) · [Adversary emulation](#adversary-emulation) · [Active Directory](#active-directory) · [Offline OSINT](#offline-osint) · [Assessment reporting](#assessment-reporting)
 - [AppSec, Supply Chain & Cloud](#appsec-supply-chain--cloud)
-  - [CI/CD policy gating](#cicd-policy-gating) · [SAST & DAST](#sast--dast) · [Software composition analysis](#software-composition-analysis) · [Secret scanning](#secret-scanning) · [Secrets management](#secrets-management) · [SBOM & supply chain](#sbom--supply-chain) · [Containers & Kubernetes](#containers--kubernetes) · [Infrastructure as code](#infrastructure-as-code) · [AWS security & automation](#aws-security--automation) · [PKI & certificates](#pki--certificates)
+  - [CI/CD policy gating](#cicd-policy-gating) · [SAST & DAST](#sast--dast) · [Software composition analysis](#software-composition-analysis) · [Secret scanning](#secret-scanning) · [Secrets management](#secrets-management) · [Password & credential managers](#password--credential-managers) · [SBOM & supply chain](#sbom--supply-chain) · [Containers & Kubernetes](#containers--kubernetes) · [Infrastructure as code](#infrastructure-as-code) · [AWS security & automation](#aws-security--automation) · [PKI & certificates](#pki--certificates)
 - [Network & Host Infrastructure](#network--host-infrastructure)
   - [DNS](#dns) · [VPN & encrypted transport](#vpn--encrypted-transport) · [Host firewalling](#host-firewalling) · [Media sanitization](#media-sanitization)
 - [Splunk](#splunk)
@@ -369,6 +369,42 @@ The reference OpenPGP implementation, and the substrate under most offline signi
 **[pass](https://www.passwordstore.org/)** — GPL-2.0-or-later · Shell over GnuPG and git · in Debian main · since 2012
 A password manager small enough to audit in an afternoon: each secret is a GPG-encrypted file in a directory tree, versioned with git. No database, no daemon, no server. Where OpenBao is the team's secret infrastructure, this is what an individual operator carries.
 > `FULL` — GnuPG and git are the only dependencies. Syncing the git store to another host is optional and is itself the sneakernet transport.
+
+## Password & credential managers
+
+A vault that syncs through a vendor's cloud is the normal shape of this category and the one thing an isolated network cannot use. Everything below either keeps the vault as a local file or runs the sync server inside your own boundary.
+
+**[KeePassXC](https://github.com/keepassxreboot/keepassxc)** — GPL-2.0 or GPL-3.0 · C++ desktop (Linux, macOS, Windows) · 28.5k★ · since 2016
+The reference offline password manager: a single encrypted KDBX file, AES-256 or ChaCha20, with TOTP, SSH agent integration, hardware key support via YubiKey challenge-response, and a CLI (`keepassxc-cli`) for scripted use. The community fork that overtook the original KeePassX, and the default answer for credential storage on a disconnected workstation.
+> `FULL` — The vault is a file on disk. Two features reach the network and both are off by default: the HIBP breach check and website favicon download. Browser integration talks to a local socket, not the internet.
+
+**[KeePassDX](https://github.com/Kunzisoft/KeePassDX)** — GPL-3.0 · Android · 7.2k★ · since 2017
+Opens the same KDBX vault on Android, with biometric unlock, hardware key support and autofill. The realistic companion when the vault has to travel to a phone that is itself off the network.
+> `FULL` — Reads and writes a local KDBX file. No account, no sync service, no telemetry.
+
+**[KeeWeb](https://github.com/keeweb/keeweb)** — MIT · Static web app / Electron desktop · 13k★ · since 2015
+A KDBX-compatible manager that runs as a plain static web app, so it can be served from an internal web server or opened straight from disk with no install. Useful where deploying a desktop binary is the harder problem, which on a locked-down build is often.
+> `FULL` — Self-host the static bundle or run the desktop build. Cloud storage backends (Dropbox, OneDrive, Google Drive) are optional integrations, unreachable and unnecessary offline.
+
+**[Vaultwarden](https://github.com/dani-garcia/vaultwarden)** — AGPL-3.0 · Rust single binary / Docker · 66.2k★ · since 2018
+Lightweight reimplementation of the Bitwarden server API in Rust, compatible with all official Bitwarden clients and running comfortably on hardware the official stack would not consider. It exists precisely because people wanted a self-hosted Bitwarden without the enterprise machinery, which makes it the better-fitting of the two here.
+> `MAJOR` — Server, database and clients all run inside your boundary with no license check or activation. Icon fetching for vault entries calls out and should be disabled with `ICON_SERVICE` or an internal icon cache; nothing else reaches the network. Push notifications and HIBP checks are optional and stay off.
+
+**[Bitwarden Server](https://github.com/bitwarden/server)** — AGPL-3.0 core · C# / .NET, Docker Compose · 19.9k★ · since 2015
+The official server, self-hostable and genuinely AGPL for the core vault, sync, and organization features. Worth listing alongside Vaultwarden where the requirement is the vendor-supported implementation rather than the light one.
+> `CONDITIONAL` — Self-hosting requires an installation ID and key issued from bitwarden.com, obtained once on a connected host and baked into the configuration before the deployment goes across. After that the vault operates within your boundary. Be aware that a set of enterprise-oriented modules under `bitwarden_license/` are source-available under the Bitwarden License rather than AGPL, so the free-and-open portion is the core, not the whole tree.
+
+**[Passbolt](https://github.com/passbolt/passbolt_api)** — AGPL-3.0 · PHP (CakePHP) + PostgreSQL · 6.1k★ · since 2016
+Team-oriented rather than individual: OpenPGP-based sharing with per-user keys, granular permissions on shared credentials, group management and an audit log. Where KeePassXC is one person's vault, this is the credential store a team shares and can prove who touched.
+> `MAJOR` — Server, database and browser extension run entirely self-hosted, with OpenPGP encryption happening client-side. Email notifications need an internal SMTP relay or must be turned off, and the health check that pings passbolt.com for version currency should be disabled.
+
+**[gopass](https://github.com/gopasspw/gopass)** — MIT · Go single binary · 7.1k★ · since 2017
+A rewrite of `pass` in Go that keeps the GPG-encrypted-file-in-a-git-tree model but adds multi-store support, team secret sharing, and a usable Windows story that the shell original never had. Same threat model, fewer sharp edges.
+> `FULL` — GPG and git only. A single static binary, which is the easiest possible artifact to carry across a gap.
+
+**[Password Safe](https://github.com/pwsafe/pwsafe)** — Artistic-2.0 · C++ / Windows, Linux · 865★ · since 2015 on GitHub, project dating to 2002
+The original, designed by Bruce Schneier's team and still actively maintained more than two decades later. A local encrypted database with a deliberately narrow feature set and no network code to audit, which is the point.
+> `FULL` — Local database file. No sync service, no update telemetry, no online component of any kind.
 
 ## SBOM & supply chain
 

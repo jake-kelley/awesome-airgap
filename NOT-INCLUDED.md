@@ -45,6 +45,7 @@ Two kinds of exclusion below. The first list failed a hard rule and will not be 
 | Tool | Reason |
 |---|---|
 | **AlienVault OSSIM** | Effectively unmaintained, folded into a commercial product. Not a credible current option. |
+| **[Buttercup](https://github.com/buttercup/buttercup-desktop)** | GPL-3.0 with 4.4k stars, and fully offline in principle, but the desktop repo was archived by its maintainers in March 2025. An archived password manager is not a credible place to keep credentials. |
 | **Cuckoo Sandbox** | Original upstream is dormant. Superseded by its actively maintained fork [CAPEv2](https://github.com/kevoreilly/CAPEv2). |
 
 
@@ -89,6 +90,9 @@ Every tool here clears all three rules. They were cut only to avoid stacking thr
 
 | Tool | Overlaps with | Note |
 |---|---|---|
+| [Psono](https://github.com/psono/psono-server) | Passbolt | Apache-2.0 self-hosted team password manager, genuinely offline-capable. Cut to avoid stacking two AGPL-style team vaults in one subcategory; Passbolt has roughly sixty times the community. |
+| [Padloc](https://github.com/padloc/padloc) | Vaultwarden, Bitwarden | AGPL-3.0, 2.9k stars, clean self-hosted design. Last pushed March 2025, so it is drifting rather than dead. Revisit if activity resumes. |
+| [LessPass](https://github.com/lesspass/lesspass) | KeePassXC, gopass | GPL-3.0 and the most air-gap-native design here: passwords are derived from a master phrase and the site name, so there is no vault to sync or carry at all. Cut on merit rather than mechanics. Deterministic derivation cannot rotate a single credential without changing the master, cannot store a password someone else assigned you, and turns a master-phrase compromise into the loss of every account at once. Listed here so the tradeoff is on record rather than the tool looking overlooked. |
 | [OSV-Scanner](https://github.com/google/osv-scanner) | Trivy, Grype, Dependency-Track | Offline-capable once the DB is exported locally. Strong tool, crowded category. |
 | [detect-secrets](https://github.com/Yelp/detect-secrets) | Gitleaks, TruffleHog, Kingfisher | Fully offline, plugin-based, with a useful baseline-diff workflow. |
 | [git-secrets](https://github.com/awslabs/git-secrets) | Gitleaks | Fully offline pre-commit hook, but a much narrower feature set. |
